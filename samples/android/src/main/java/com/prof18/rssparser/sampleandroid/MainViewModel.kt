@@ -49,13 +49,12 @@ class MainViewModel : ViewModel() {
     }
 
     fun fetchFeed() {
-        val parser = RssParserBuilder(
-            callFactory = OkHttpClient(),
-        ).build()
+        val parser = RssParserBuilder().build()
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                val channel = parser.getRssChannel(url)
+                val response = okHttpClient.newCall(Request.Builder().url(url).build()).execute()
+                val channel = response.use { parser.parse(it.body.bytes(), url) }
                 _rssChannel.postValue(channel)
             } catch (e: Exception) {
                 e.printStackTrace()

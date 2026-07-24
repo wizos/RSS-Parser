@@ -99,6 +99,13 @@ Reporterre est un média indépendant qui publie chaque jour des articles, enqu�
                     type = "image/jpeg",
                     medium = "image",
                 ),
+                mediaContents = listOf(
+                    RawMediaContent(
+                        url = "https://reporterre.net/local/cache-vignettes/L700xH467/european_union_flag__4768764591_2_-cc8c4.jpg?1740588172",
+                        type = "image/jpeg",
+                        medium = "image",
+                    ),
+                ),
             )
         )
     )

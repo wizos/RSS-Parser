@@ -54,7 +54,7 @@ internal data class AtomEntryEntity(
     val categories: List<AtomCategoryEntity>? = null,
     @XmlElement
     @XmlSerialName(value = "group", prefix = "media", namespace = "http://search.yahoo.com/mrss/")
-    val mediaGroup: MediaGroupEntity? = null,
+    val mediaGroups: List<MediaGroupEntity>? = null,
     @XmlElement
     @XmlSerialName(value = "videoId", prefix = "yt", namespace = "http://www.youtube.com/xml/schemas/2015")
     val youtubeVideoId: String? = null,
@@ -66,7 +66,7 @@ internal data class AtomEntryEntity(
     val mediaThumbnail: MediaThumbnailEntity? = null,
     @XmlElement
     @XmlSerialName(value = "content", prefix = "media", namespace = "http://search.yahoo.com/mrss/")
-    val mediaContent: AtomMediaContentEntity? = null,
+    val mediaContents: List<AtomMediaContentEntity>? = null,
 )
 
 @XmlSerialName(value = "author")
@@ -89,7 +89,7 @@ internal data class MediaGroupEntity(
     val title: String? = null,
     @XmlElement
     @XmlSerialName(value = "content", prefix = "media", namespace = "http://search.yahoo.com/mrss/")
-    val mediaContent: AtomMediaContentEntity? = null,
+    val mediaContents: List<AtomMediaContentEntity>? = null,
     @XmlElement
     @XmlSerialName(value = "thumbnail", prefix = "media", namespace = "http://search.yahoo.com/mrss/")
     val mediaThumbnail: MediaThumbnailEntity? = null,

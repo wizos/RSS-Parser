@@ -36,6 +36,8 @@ public data class RssItem(
     val youtubeItemData: YoutubeItemData?,
     val rawEnclosure: RawEnclosure?,
     val rawMediaContent: RawMediaContent? = null,
+    val mediaContents: List<RawMediaContent> = emptyList(),
+    val mediaGroups: List<RssMediaGroup> = emptyList(),
 ) {
     internal data class Builder(
         private var guid: String? = null,
@@ -56,6 +58,8 @@ public data class RssItem(
         private var youtubeItemData: YoutubeItemData? = null,
         private var rawEnclosure: RawEnclosure? = null,
         private var rawMediaContent: RawMediaContent? = null,
+        private var mediaContents: List<RawMediaContent> = emptyList(),
+        private var mediaGroups: List<RssMediaGroup> = emptyList(),
     ) {
         private var linkPriority: Int = LINK_PRIORITY_NONE
 
@@ -122,6 +126,14 @@ public data class RssItem(
 
         fun rawMediaContent(rawMediaContent: RawMediaContent?) = apply { this.rawMediaContent = rawMediaContent }
 
+        fun mediaContents(mediaContents: List<RawMediaContent>) = apply {
+            this.mediaContents = mediaContents
+        }
+
+        fun mediaGroups(mediaGroups: List<RssMediaGroup>) = apply {
+            this.mediaGroups = mediaGroups
+        }
+
         fun build(): RssItem? {
             if (
                 guid.isNullOrBlank() &&
@@ -141,7 +153,9 @@ public data class RssItem(
                 commentUrl.isNullOrBlank() &&
                 youtubeItemData == null &&
                 rawEnclosure == null &&
-                rawMediaContent == null
+                rawMediaContent == null &&
+                mediaContents.isEmpty() &&
+                mediaGroups.isEmpty()
             ) {
                 return null
             }
@@ -165,6 +179,8 @@ public data class RssItem(
                 youtubeItemData = youtubeItemData,
                 rawEnclosure = rawEnclosure,
                 rawMediaContent = rawMediaContent,
+                mediaContents = mediaContents,
+                mediaGroups = mediaGroups,
             )
         }
     }

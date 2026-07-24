@@ -13,7 +13,7 @@ class XmlParserAtomRelativeLink : XmlParserTestExecutor() {
 
     val expectedChannel = RssChannel(
         title = "Aurimas Liutikas",
-        link = "$BASE_FEED_URL/",
+        link = "https://www.base-feed-url.com/",
         description = "A personal page of Aurimas Liutikas.",
         image = null,
         lastBuildDate = "2024-12-19T06:13:47+00:00",
@@ -25,7 +25,7 @@ class XmlParserAtomRelativeLink : XmlParserTestExecutor() {
                 guid = "/2024/12/18/What-The-Distribution",
                 title = "What The Distribution - What Is Inside Gradle Distribution Zips?",
                 author = "",
-                link = "$BASE_FEED_URL/2024/12/18/What-The-Distribution.html",
+                link = "https://www.base-feed-url.com/2024/12/18/What-The-Distribution.html",
                 pubDate = "2024-12-18T00:00:00+00:00",
                 description = "When I saw this post",
                 content = null,

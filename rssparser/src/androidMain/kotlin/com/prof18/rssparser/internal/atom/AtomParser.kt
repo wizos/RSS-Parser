@@ -24,6 +24,7 @@ import com.prof18.rssparser.internal.RssKeyword
 import com.prof18.rssparser.internal.attributeValue
 import com.prof18.rssparser.internal.contains
 import com.prof18.rssparser.internal.nextTrimmedText
+import com.prof18.rssparser.internal.resolveAtomLink
 import com.prof18.rssparser.model.RssChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.isActive
@@ -66,6 +67,7 @@ internal fun CoroutineScope.extractAtomContent(
                 xmlPullParser.contains(AtomKeyword.YOUTUBE_MEDIA_GROUP) -> {
                     if (insideItem) {
                         insideYoutubeMediaGroup = true
+                        channelFactory.startMediaGroup()
                     }
                 }
                 //endregion
@@ -171,7 +173,7 @@ internal fun CoroutineScope.extractAtomContent(
                             // Some feeds have full links
                             href?.startsWith("/") == true
                         ) {
-                            input.baseUrl + href
+                            resolveAtomLink(input.baseUrl, href)
                         } else {
                             href
                         }
@@ -202,42 +204,34 @@ internal fun CoroutineScope.extractAtomContent(
 
                 xmlPullParser.contains(AtomKeyword.YOUTUBE_MEDIA_GROUP_TITLE) -> {
                     if (insideItem && insideYoutubeMediaGroup) {
-                        channelFactory.youtubeItemDataBuilder.title(xmlPullParser.nextTrimmedText())
+                        val title = xmlPullParser.nextTrimmedText()
+                        channelFactory.youtubeItemDataBuilder.title(title)
+                        channelFactory.setMediaGroupTitle(title)
                     }
                 }
 
                 xmlPullParser.contains(AtomKeyword.YOUTUBE_MEDIA_GROUP_DESCRIPTION) -> {
                     if (insideItem && insideYoutubeMediaGroup) {
-                        channelFactory.youtubeItemDataBuilder.description(xmlPullParser.nextTrimmedText())
+                        val description = xmlPullParser.nextTrimmedText()
+                        channelFactory.youtubeItemDataBuilder.description(description)
+                        channelFactory.setMediaGroupDescription(description)
                     }
                 }
 
                 xmlPullParser.contains(AtomKeyword.MEDIA_GROUP_CONTENT) -> {
                     if (insideItem) {
+                        val url = xmlPullParser.attributeValue(RssKeyword.URL)
+                        val type = xmlPullParser.attributeValue(RssKeyword.ITEM_TYPE)
+                        val medium = xmlPullParser.attributeValue(RssKeyword.ITEM_MEDIUM)
+                        channelFactory.addMediaContent(
+                            url = url,
+                            type = type,
+                            medium = medium,
+                            includeInLegacyFields = !insideYoutubeMediaGroup,
+                        )
+
                         if (insideYoutubeMediaGroup) {
-                            val videoUrl = xmlPullParser.attributeValue(AtomKeyword.YOUTUBE_MEDIA_GROUP_CONTENT_URL)
-                            channelFactory.youtubeItemDataBuilder.videoUrl(videoUrl)
-                        } else {
-                            val url = xmlPullParser.attributeValue(RssKeyword.URL)
-                            val type = xmlPullParser.attributeValue(RssKeyword.ITEM_TYPE)
-                            val medium = xmlPullParser.attributeValue(RssKeyword.ITEM_MEDIUM)
-
-                            channelFactory.rawMediaContentBuilder.url(url)
-                            channelFactory.rawMediaContentBuilder.type(type)
-                            channelFactory.rawMediaContentBuilder.medium(medium)
-
-                            when {
-                                !medium.isNullOrBlank() -> when {
-                                    medium.equals("image", ignoreCase = true) -> channelFactory.articleBuilder.image(url)
-                                    medium.equals("audio", ignoreCase = true) -> channelFactory.articleBuilder.audioIfNull(url)
-                                    medium.equals("video", ignoreCase = true) -> channelFactory.articleBuilder.videoIfNull(url)
-                                }
-                                !type.isNullOrBlank() -> when {
-                                    type.contains("image", ignoreCase = true) -> channelFactory.articleBuilder.image(url)
-                                    type.contains("audio", ignoreCase = true) -> channelFactory.articleBuilder.audioIfNull(url)
-                                    type.contains("video", ignoreCase = true) -> channelFactory.articleBuilder.videoIfNull(url)
-                                }
-                            }
+                            channelFactory.youtubeItemDataBuilder.videoUrl(url)
                         }
                     }
                 }
@@ -249,9 +243,11 @@ internal fun CoroutineScope.extractAtomContent(
                         )
                         if (insideYoutubeMediaGroup) {
                             channelFactory.youtubeItemDataBuilder.thumbnailUrl(thumbnailUrl)
-                        } else {
-                            channelFactory.articleBuilder.image(thumbnailUrl)
                         }
+                        channelFactory.setMediaGroupThumbnail(
+                            url = thumbnailUrl,
+                            includeInLegacyFields = !insideYoutubeMediaGroup,
+                        )
                     }
                 }
 
@@ -277,6 +273,7 @@ internal fun CoroutineScope.extractAtomContent(
             // Exit conditions
             eventType == XmlPullParser.END_TAG && xmlPullParser.contains(AtomKeyword.YOUTUBE_MEDIA_GROUP) -> {
                 insideYoutubeMediaGroup = false
+                channelFactory.endMediaGroup()
             }
 
             eventType == XmlPullParser.END_TAG && xmlPullParser.contains(AtomKeyword.ENTRY_ITEM) -> {

@@ -134,9 +134,15 @@ internal fun CoroutineScope.extractRSSContent(
 
                 xmlPullParser.contains(RssKeyword.ITEM_THUMBNAIL) -> {
                     if (insideItem) {
-                        channelFactory.articleBuilder.image(
-                            xmlPullParser.attributeValue(RssKeyword.URL)
+                        channelFactory.setMediaGroupThumbnail(
+                            xmlPullParser.attributeValue(RssKeyword.URL),
                         )
+                    }
+                }
+
+                xmlPullParser.contains(RssKeyword.ITEM_MEDIA_GROUP) -> {
+                    if (insideItem) {
+                        channelFactory.startMediaGroup()
                     }
                 }
 
@@ -146,22 +152,19 @@ internal fun CoroutineScope.extractRSSContent(
                         val type = xmlPullParser.attributeValue(RssKeyword.ITEM_TYPE)
                         val medium = xmlPullParser.attributeValue(RssKeyword.ITEM_MEDIUM)
 
-                        channelFactory.rawMediaContentBuilder.url(url)
-                        channelFactory.rawMediaContentBuilder.type(type)
-                        channelFactory.rawMediaContentBuilder.medium(medium)
+                        channelFactory.addMediaContent(url, type, medium)
+                    }
+                }
 
-                        when {
-                            !medium.isNullOrBlank() -> when {
-                                medium.equals("image", ignoreCase = true) -> channelFactory.articleBuilder.image(url)
-                                medium.equals("audio", ignoreCase = true) -> channelFactory.articleBuilder.audioIfNull(url)
-                                medium.equals("video", ignoreCase = true) -> channelFactory.articleBuilder.videoIfNull(url)
-                            }
-                            !type.isNullOrBlank() -> when {
-                                type.contains("image", ignoreCase = true) -> channelFactory.articleBuilder.image(url)
-                                type.contains("audio", ignoreCase = true) -> channelFactory.articleBuilder.audioIfNull(url)
-                                type.contains("video", ignoreCase = true) -> channelFactory.articleBuilder.videoIfNull(url)
-                            }
-                        }
+                xmlPullParser.contains(RssKeyword.ITEM_MEDIA_TITLE) -> {
+                    if (insideItem) {
+                        channelFactory.setMediaGroupTitle(xmlPullParser.nextTrimmedText())
+                    }
+                }
+
+                xmlPullParser.contains(RssKeyword.ITEM_MEDIA_DESCRIPTION) -> {
+                    if (insideItem) {
+                        channelFactory.setMediaGroupDescription(xmlPullParser.nextTrimmedText())
                     }
                 }
 
@@ -409,6 +412,10 @@ internal fun CoroutineScope.extractRSSContent(
             }
 
             // Exit conditions
+            eventType == XmlPullParser.END_TAG && xmlPullParser.contains(RssKeyword.ITEM_MEDIA_GROUP) -> {
+                channelFactory.endMediaGroup()
+            }
+
             eventType == XmlPullParser.END_TAG && xmlPullParser.contains(RssKeyword.ITEM) -> {
                 // The item is correctly parsed
                 insideItem = false

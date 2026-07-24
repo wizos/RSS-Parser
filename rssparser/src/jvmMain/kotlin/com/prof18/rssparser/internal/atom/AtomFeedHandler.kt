@@ -4,6 +4,7 @@ import com.prof18.rssparser.internal.AtomKeyword
 import com.prof18.rssparser.internal.ChannelFactory
 import com.prof18.rssparser.internal.FeedHandler
 import com.prof18.rssparser.internal.RssKeyword
+import com.prof18.rssparser.internal.resolveAtomLink
 import com.prof18.rssparser.model.RssChannel
 import org.xml.sax.Attributes
 
@@ -31,6 +32,7 @@ internal class AtomFeedHandler(
             AtomKeyword.YOUTUBE_MEDIA_GROUP.value -> {
                 if (isInsideItem) {
                     isInsideYoutubeMediaGroup = true
+                    channelFactory.startMediaGroup()
                 }
             }
 
@@ -55,7 +57,7 @@ internal class AtomFeedHandler(
                         // Some feeds have full links
                         href?.startsWith("/") == true
                     ) {
-                        baseFeedUrl + href
+                        resolveAtomLink(baseFeedUrl, href)
                     } else {
                         href
                     }
@@ -68,30 +70,18 @@ internal class AtomFeedHandler(
 
             AtomKeyword.MEDIA_GROUP_CONTENT.value -> {
                 if (isInsideItem) {
+                    val url = attributes?.getValue(RssKeyword.URL.value)
+                    val type = attributes?.getValue(RssKeyword.ITEM_TYPE.value)
+                    val medium = attributes?.getValue(RssKeyword.ITEM_MEDIUM.value)
+                    channelFactory.addMediaContent(
+                        url = url,
+                        type = type,
+                        medium = medium,
+                        includeInLegacyFields = !isInsideYoutubeMediaGroup,
+                    )
+
                     if (isInsideYoutubeMediaGroup) {
-                        val url = attributes?.getValue(AtomKeyword.YOUTUBE_MEDIA_GROUP_CONTENT_URL.value)
                         channelFactory.youtubeItemDataBuilder.videoUrl(url)
-                    } else {
-                        val url = attributes?.getValue(RssKeyword.URL.value)
-                        val type = attributes?.getValue(RssKeyword.ITEM_TYPE.value)
-                        val medium = attributes?.getValue(RssKeyword.ITEM_MEDIUM.value)
-
-                        channelFactory.rawMediaContentBuilder.url(url)
-                        channelFactory.rawMediaContentBuilder.type(type)
-                        channelFactory.rawMediaContentBuilder.medium(medium)
-
-                        when {
-                            !medium.isNullOrBlank() -> when {
-                                medium.equals("image", ignoreCase = true) -> channelFactory.articleBuilder.image(url)
-                                medium.equals("audio", ignoreCase = true) -> channelFactory.articleBuilder.audioIfNull(url)
-                                medium.equals("video", ignoreCase = true) -> channelFactory.articleBuilder.videoIfNull(url)
-                            }
-                            !type.isNullOrBlank() -> when {
-                                type.contains("image", ignoreCase = true) -> channelFactory.articleBuilder.image(url)
-                                type.contains("audio", ignoreCase = true) -> channelFactory.articleBuilder.audioIfNull(url)
-                                type.contains("video", ignoreCase = true) -> channelFactory.articleBuilder.videoIfNull(url)
-                            }
-                        }
                     }
                 }
             }
@@ -101,9 +91,11 @@ internal class AtomFeedHandler(
                 if (isInsideItem) {
                     if (isInsideYoutubeMediaGroup) {
                         channelFactory.youtubeItemDataBuilder.thumbnailUrl(url)
-                    } else {
-                        channelFactory.articleBuilder.image(url)
                     }
+                    channelFactory.setMediaGroupThumbnail(
+                        url = url,
+                        includeInLegacyFields = !isInsideYoutubeMediaGroup,
+                    )
                 }
             }
 
@@ -162,15 +154,20 @@ internal class AtomFeedHandler(
                     }
                     AtomKeyword.YOUTUBE_CHANNEL_ID.value -> channelFactory.youtubeChannelDataBuilder.channelId(text)
                     AtomKeyword.YOUTUBE_VIDEO_ID.value -> channelFactory.youtubeItemDataBuilder.videoId(text)
-                    AtomKeyword.YOUTUBE_MEDIA_GROUP.value -> isInsideYoutubeMediaGroup = false
+                    AtomKeyword.YOUTUBE_MEDIA_GROUP.value -> {
+                        isInsideYoutubeMediaGroup = false
+                        channelFactory.endMediaGroup()
+                    }
                     AtomKeyword.YOUTUBE_MEDIA_GROUP_TITLE.value -> {
                         if (isInsideYoutubeMediaGroup) {
                             channelFactory.youtubeItemDataBuilder.title(text)
+                            channelFactory.setMediaGroupTitle(text)
                         }
                     }
                     AtomKeyword.YOUTUBE_MEDIA_GROUP_DESCRIPTION.value -> {
                         if (isInsideYoutubeMediaGroup) {
                             channelFactory.youtubeItemDataBuilder.description(text)
+                            channelFactory.setMediaGroupDescription(text)
                         }
                     }
                 }

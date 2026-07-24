@@ -69,6 +69,13 @@ class XmlParserGoogleBlogFeedTest : XmlParserTestExecutor() {
                     type = null,
                     medium = "image",
                 ),
+                mediaContents = listOf(
+                    RawMediaContent(
+                        url = "https://storage.googleapis.com/gweb-uniblog-publish-prod/images/Google_AI_Tools_CC_social.max-600x600.format-webp.webp",
+                        type = null,
+                        medium = "image",
+                    ),
+                ),
             )
         )
     )

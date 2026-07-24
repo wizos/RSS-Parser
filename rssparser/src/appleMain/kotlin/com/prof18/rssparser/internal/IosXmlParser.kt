@@ -6,8 +6,12 @@ import com.prof18.rssparser.internal.rdf.RdfFeedHandler
 import com.prof18.rssparser.internal.rss.RssFeedHandler
 import com.prof18.rssparser.model.RssChannel
 import kotlinx.cinterop.BetaInteropApi
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import platform.Foundation.NSData
 import platform.Foundation.NSError
 import platform.Foundation.NSString
 import platform.Foundation.NSUTF8StringEncoding
@@ -44,10 +48,22 @@ internal class IosXmlParser(
     }
 
     @OptIn(BetaInteropApi::class)
-    override fun generateParserInputFromString(rawRssFeed: String): ParserInput {
+    override fun generateParserInput(rawRssFeed: String, baseUrl: String?): ParserInput {
         val cleanedXml = rawRssFeed.trim()
         val data = NSString.create(string = cleanedXml).dataUsingEncoding(NSUTF8StringEncoding)
-        return ParserInput(requireNotNull(data))
+        return ParserInput(requireNotNull(data), baseUrl)
+    }
+
+    @OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
+    override fun generateParserInput(bytes: ByteArray, baseUrl: String?): ParserInput {
+        val data = if (bytes.isEmpty()) {
+            NSData.create(bytes = null, length = 0uL)
+        } else {
+            bytes.usePinned {
+                NSData.create(bytes = it.addressOf(0), length = bytes.size.toULong())
+            }
+        }
+        return ParserInput(data, baseUrl)
     }
 }
 

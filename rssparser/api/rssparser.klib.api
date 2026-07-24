@@ -1,42 +1,34 @@
 // Klib ABI Dump
 // Targets: [iosArm64, iosSimulatorArm64, iosX64, js, macosArm64, macosX64, tvosArm64, tvosSimulatorArm64, tvosX64, wasmJs, watchosDeviceArm64, watchosSimulatorArm64, watchosX64]
-// Alias: apple => [iosArm64, iosSimulatorArm64, iosX64, macosArm64, macosX64, tvosArm64, tvosSimulatorArm64, tvosX64, watchosDeviceArm64, watchosSimulatorArm64, watchosX64]
 // Rendering settings:
 // - Signature version: 2
 // - Show manifest properties: true
 // - Show declarations: true
 
 // Library unique name: <RSS-Parser:rssparser>
-final class com.prof18.rssparser.exception/HttpException : kotlin/Exception { // com.prof18.rssparser.exception/HttpException|null[0]
-    constructor <init>(kotlin/Int, kotlin/String?) // com.prof18.rssparser.exception/HttpException.<init>|<init>(kotlin.Int;kotlin.String?){}[0]
+abstract fun interface com.prof18.rssparser/XmlFeedRecovery { // com.prof18.rssparser/XmlFeedRecovery|null[0]
+    abstract fun repair(kotlin/String, com.prof18.rssparser.exception/RssParsingException): kotlin/String? // com.prof18.rssparser/XmlFeedRecovery.repair|repair(kotlin.String;com.prof18.rssparser.exception.RssParsingException){}[0]
 
-    final val code // com.prof18.rssparser.exception/HttpException.code|{}code[0]
-        final fun <get-code>(): kotlin/Int // com.prof18.rssparser.exception/HttpException.code.<get-code>|<get-code>(){}[0]
-    final val message // com.prof18.rssparser.exception/HttpException.message|{}message[0]
-        final fun <get-message>(): kotlin/String? // com.prof18.rssparser.exception/HttpException.message.<get-message>|<get-message>(){}[0]
-
-    final fun component1(): kotlin/Int // com.prof18.rssparser.exception/HttpException.component1|component1(){}[0]
-    final fun component2(): kotlin/String? // com.prof18.rssparser.exception/HttpException.component2|component2(){}[0]
-    final fun copy(kotlin/Int = ..., kotlin/String? = ...): com.prof18.rssparser.exception/HttpException // com.prof18.rssparser.exception/HttpException.copy|copy(kotlin.Int;kotlin.String?){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // com.prof18.rssparser.exception/HttpException.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // com.prof18.rssparser.exception/HttpException.hashCode|hashCode(){}[0]
-    final fun toString(): kotlin/String // com.prof18.rssparser.exception/HttpException.toString|toString(){}[0]
+    final object Companion { // com.prof18.rssparser/XmlFeedRecovery.Companion|null[0]
+        final val Default // com.prof18.rssparser/XmlFeedRecovery.Companion.Default|{}Default[0]
+            final fun <get-Default>(): com.prof18.rssparser/XmlFeedRecovery // com.prof18.rssparser/XmlFeedRecovery.Companion.Default.<get-Default>|<get-Default>(){}[0]
+        final val None // com.prof18.rssparser/XmlFeedRecovery.Companion.None|{}None[0]
+            final fun <get-None>(): com.prof18.rssparser/XmlFeedRecovery // com.prof18.rssparser/XmlFeedRecovery.Companion.None.<get-None>|<get-None>(){}[0]
+    }
 }
 
 final class com.prof18.rssparser.exception/RssParsingException : kotlin/Exception { // com.prof18.rssparser.exception/RssParsingException|null[0]
     constructor <init>(kotlin/String?, kotlin/Throwable?) // com.prof18.rssparser.exception/RssParsingException.<init>|<init>(kotlin.String?;kotlin.Throwable?){}[0]
+    constructor <init>(kotlin/String?, kotlin/Throwable?, kotlin/Int?, kotlin/Int?) // com.prof18.rssparser.exception/RssParsingException.<init>|<init>(kotlin.String?;kotlin.Throwable?;kotlin.Int?;kotlin.Int?){}[0]
 
     final val cause // com.prof18.rssparser.exception/RssParsingException.cause|{}cause[0]
         final fun <get-cause>(): kotlin/Throwable? // com.prof18.rssparser.exception/RssParsingException.cause.<get-cause>|<get-cause>(){}[0]
+    final val columnNumber // com.prof18.rssparser.exception/RssParsingException.columnNumber|{}columnNumber[0]
+        final fun <get-columnNumber>(): kotlin/Int? // com.prof18.rssparser.exception/RssParsingException.columnNumber.<get-columnNumber>|<get-columnNumber>(){}[0]
+    final val lineNumber // com.prof18.rssparser.exception/RssParsingException.lineNumber|{}lineNumber[0]
+        final fun <get-lineNumber>(): kotlin/Int? // com.prof18.rssparser.exception/RssParsingException.lineNumber.<get-lineNumber>|<get-lineNumber>(){}[0]
     final val message // com.prof18.rssparser.exception/RssParsingException.message|{}message[0]
         final fun <get-message>(): kotlin/String? // com.prof18.rssparser.exception/RssParsingException.message.<get-message>|<get-message>(){}[0]
-
-    final fun component1(): kotlin/String? // com.prof18.rssparser.exception/RssParsingException.component1|component1(){}[0]
-    final fun component2(): kotlin/Throwable? // com.prof18.rssparser.exception/RssParsingException.component2|component2(){}[0]
-    final fun copy(kotlin/String? = ..., kotlin/Throwable? = ...): com.prof18.rssparser.exception/RssParsingException // com.prof18.rssparser.exception/RssParsingException.copy|copy(kotlin.String?;kotlin.Throwable?){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // com.prof18.rssparser.exception/RssParsingException.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // com.prof18.rssparser.exception/RssParsingException.hashCode|hashCode(){}[0]
-    final fun toString(): kotlin/String // com.prof18.rssparser.exception/RssParsingException.toString|toString(){}[0]
 }
 
 final class com.prof18.rssparser.model/ItunesChannelData { // com.prof18.rssparser.model/ItunesChannelData|null[0]
@@ -236,7 +228,7 @@ final class com.prof18.rssparser.model/RssImage { // com.prof18.rssparser.model/
 }
 
 final class com.prof18.rssparser.model/RssItem { // com.prof18.rssparser.model/RssItem|null[0]
-    constructor <init>(kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin.collections/List<kotlin/String>, com.prof18.rssparser.model/ItunesItemData?, kotlin/String?, com.prof18.rssparser.model/YoutubeItemData?, com.prof18.rssparser.model/RawEnclosure?, com.prof18.rssparser.model/RawMediaContent? = ...) // com.prof18.rssparser.model/RssItem.<init>|<init>(kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.collections.List<kotlin.String>;com.prof18.rssparser.model.ItunesItemData?;kotlin.String?;com.prof18.rssparser.model.YoutubeItemData?;com.prof18.rssparser.model.RawEnclosure?;com.prof18.rssparser.model.RawMediaContent?){}[0]
+    constructor <init>(kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin/String?, kotlin.collections/List<kotlin/String>, com.prof18.rssparser.model/ItunesItemData?, kotlin/String?, com.prof18.rssparser.model/YoutubeItemData?, com.prof18.rssparser.model/RawEnclosure?, com.prof18.rssparser.model/RawMediaContent? = ..., kotlin.collections/List<com.prof18.rssparser.model/RawMediaContent> = ..., kotlin.collections/List<com.prof18.rssparser.model/RssMediaGroup> = ...) // com.prof18.rssparser.model/RssItem.<init>|<init>(kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.collections.List<kotlin.String>;com.prof18.rssparser.model.ItunesItemData?;kotlin.String?;com.prof18.rssparser.model.YoutubeItemData?;com.prof18.rssparser.model.RawEnclosure?;com.prof18.rssparser.model.RawMediaContent?;kotlin.collections.List<com.prof18.rssparser.model.RawMediaContent>;kotlin.collections.List<com.prof18.rssparser.model.RssMediaGroup>){}[0]
 
     final val audio // com.prof18.rssparser.model/RssItem.audio|{}audio[0]
         final fun <get-audio>(): kotlin/String? // com.prof18.rssparser.model/RssItem.audio.<get-audio>|<get-audio>(){}[0]
@@ -258,6 +250,10 @@ final class com.prof18.rssparser.model/RssItem { // com.prof18.rssparser.model/R
         final fun <get-itunesItemData>(): com.prof18.rssparser.model/ItunesItemData? // com.prof18.rssparser.model/RssItem.itunesItemData.<get-itunesItemData>|<get-itunesItemData>(){}[0]
     final val link // com.prof18.rssparser.model/RssItem.link|{}link[0]
         final fun <get-link>(): kotlin/String? // com.prof18.rssparser.model/RssItem.link.<get-link>|<get-link>(){}[0]
+    final val mediaContents // com.prof18.rssparser.model/RssItem.mediaContents|{}mediaContents[0]
+        final fun <get-mediaContents>(): kotlin.collections/List<com.prof18.rssparser.model/RawMediaContent> // com.prof18.rssparser.model/RssItem.mediaContents.<get-mediaContents>|<get-mediaContents>(){}[0]
+    final val mediaGroups // com.prof18.rssparser.model/RssItem.mediaGroups|{}mediaGroups[0]
+        final fun <get-mediaGroups>(): kotlin.collections/List<com.prof18.rssparser.model/RssMediaGroup> // com.prof18.rssparser.model/RssItem.mediaGroups.<get-mediaGroups>|<get-mediaGroups>(){}[0]
     final val pubDate // com.prof18.rssparser.model/RssItem.pubDate|{}pubDate[0]
         final fun <get-pubDate>(): kotlin/String? // com.prof18.rssparser.model/RssItem.pubDate.<get-pubDate>|<get-pubDate>(){}[0]
     final val rawEnclosure // com.prof18.rssparser.model/RssItem.rawEnclosure|{}rawEnclosure[0]
@@ -285,7 +281,9 @@ final class com.prof18.rssparser.model/RssItem { // com.prof18.rssparser.model/R
     final fun component16(): com.prof18.rssparser.model/YoutubeItemData? // com.prof18.rssparser.model/RssItem.component16|component16(){}[0]
     final fun component17(): com.prof18.rssparser.model/RawEnclosure? // com.prof18.rssparser.model/RssItem.component17|component17(){}[0]
     final fun component18(): com.prof18.rssparser.model/RawMediaContent? // com.prof18.rssparser.model/RssItem.component18|component18(){}[0]
+    final fun component19(): kotlin.collections/List<com.prof18.rssparser.model/RawMediaContent> // com.prof18.rssparser.model/RssItem.component19|component19(){}[0]
     final fun component2(): kotlin/String? // com.prof18.rssparser.model/RssItem.component2|component2(){}[0]
+    final fun component20(): kotlin.collections/List<com.prof18.rssparser.model/RssMediaGroup> // com.prof18.rssparser.model/RssItem.component20|component20(){}[0]
     final fun component3(): kotlin/String? // com.prof18.rssparser.model/RssItem.component3|component3(){}[0]
     final fun component4(): kotlin/String? // com.prof18.rssparser.model/RssItem.component4|component4(){}[0]
     final fun component5(): kotlin/String? // com.prof18.rssparser.model/RssItem.component5|component5(){}[0]
@@ -293,10 +291,32 @@ final class com.prof18.rssparser.model/RssItem { // com.prof18.rssparser.model/R
     final fun component7(): kotlin/String? // com.prof18.rssparser.model/RssItem.component7|component7(){}[0]
     final fun component8(): kotlin/String? // com.prof18.rssparser.model/RssItem.component8|component8(){}[0]
     final fun component9(): kotlin/String? // com.prof18.rssparser.model/RssItem.component9|component9(){}[0]
-    final fun copy(kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin.collections/List<kotlin/String> = ..., com.prof18.rssparser.model/ItunesItemData? = ..., kotlin/String? = ..., com.prof18.rssparser.model/YoutubeItemData? = ..., com.prof18.rssparser.model/RawEnclosure? = ..., com.prof18.rssparser.model/RawMediaContent? = ...): com.prof18.rssparser.model/RssItem // com.prof18.rssparser.model/RssItem.copy|copy(kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.collections.List<kotlin.String>;com.prof18.rssparser.model.ItunesItemData?;kotlin.String?;com.prof18.rssparser.model.YoutubeItemData?;com.prof18.rssparser.model.RawEnclosure?;com.prof18.rssparser.model.RawMediaContent?){}[0]
+    final fun copy(kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin.collections/List<kotlin/String> = ..., com.prof18.rssparser.model/ItunesItemData? = ..., kotlin/String? = ..., com.prof18.rssparser.model/YoutubeItemData? = ..., com.prof18.rssparser.model/RawEnclosure? = ..., com.prof18.rssparser.model/RawMediaContent? = ..., kotlin.collections/List<com.prof18.rssparser.model/RawMediaContent> = ..., kotlin.collections/List<com.prof18.rssparser.model/RssMediaGroup> = ...): com.prof18.rssparser.model/RssItem // com.prof18.rssparser.model/RssItem.copy|copy(kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.collections.List<kotlin.String>;com.prof18.rssparser.model.ItunesItemData?;kotlin.String?;com.prof18.rssparser.model.YoutubeItemData?;com.prof18.rssparser.model.RawEnclosure?;com.prof18.rssparser.model.RawMediaContent?;kotlin.collections.List<com.prof18.rssparser.model.RawMediaContent>;kotlin.collections.List<com.prof18.rssparser.model.RssMediaGroup>){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // com.prof18.rssparser.model/RssItem.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // com.prof18.rssparser.model/RssItem.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // com.prof18.rssparser.model/RssItem.toString|toString(){}[0]
+}
+
+final class com.prof18.rssparser.model/RssMediaGroup { // com.prof18.rssparser.model/RssMediaGroup|null[0]
+    constructor <init>(kotlin/String?, kotlin/String?, kotlin/String?, kotlin.collections/List<com.prof18.rssparser.model/RawMediaContent>) // com.prof18.rssparser.model/RssMediaGroup.<init>|<init>(kotlin.String?;kotlin.String?;kotlin.String?;kotlin.collections.List<com.prof18.rssparser.model.RawMediaContent>){}[0]
+
+    final val contents // com.prof18.rssparser.model/RssMediaGroup.contents|{}contents[0]
+        final fun <get-contents>(): kotlin.collections/List<com.prof18.rssparser.model/RawMediaContent> // com.prof18.rssparser.model/RssMediaGroup.contents.<get-contents>|<get-contents>(){}[0]
+    final val description // com.prof18.rssparser.model/RssMediaGroup.description|{}description[0]
+        final fun <get-description>(): kotlin/String? // com.prof18.rssparser.model/RssMediaGroup.description.<get-description>|<get-description>(){}[0]
+    final val thumbnail // com.prof18.rssparser.model/RssMediaGroup.thumbnail|{}thumbnail[0]
+        final fun <get-thumbnail>(): kotlin/String? // com.prof18.rssparser.model/RssMediaGroup.thumbnail.<get-thumbnail>|<get-thumbnail>(){}[0]
+    final val title // com.prof18.rssparser.model/RssMediaGroup.title|{}title[0]
+        final fun <get-title>(): kotlin/String? // com.prof18.rssparser.model/RssMediaGroup.title.<get-title>|<get-title>(){}[0]
+
+    final fun component1(): kotlin/String? // com.prof18.rssparser.model/RssMediaGroup.component1|component1(){}[0]
+    final fun component2(): kotlin/String? // com.prof18.rssparser.model/RssMediaGroup.component2|component2(){}[0]
+    final fun component3(): kotlin/String? // com.prof18.rssparser.model/RssMediaGroup.component3|component3(){}[0]
+    final fun component4(): kotlin.collections/List<com.prof18.rssparser.model/RawMediaContent> // com.prof18.rssparser.model/RssMediaGroup.component4|component4(){}[0]
+    final fun copy(kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin.collections/List<com.prof18.rssparser.model/RawMediaContent> = ...): com.prof18.rssparser.model/RssMediaGroup // com.prof18.rssparser.model/RssMediaGroup.copy|copy(kotlin.String?;kotlin.String?;kotlin.String?;kotlin.collections.List<com.prof18.rssparser.model.RawMediaContent>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.prof18.rssparser.model/RssMediaGroup.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.prof18.rssparser.model/RssMediaGroup.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.prof18.rssparser.model/RssMediaGroup.toString|toString(){}[0]
 }
 
 final class com.prof18.rssparser.model/YoutubeChannelData { // com.prof18.rssparser.model/YoutubeChannelData|null[0]
@@ -344,18 +364,15 @@ final class com.prof18.rssparser.model/YoutubeItemData { // com.prof18.rssparser
 }
 
 final class com.prof18.rssparser/RssParser { // com.prof18.rssparser/RssParser|null[0]
-    final suspend fun getRssChannel(kotlin/String): com.prof18.rssparser.model/RssChannel // com.prof18.rssparser/RssParser.getRssChannel|getRssChannel(kotlin.String){}[0]
-    final suspend fun parse(kotlin/String): com.prof18.rssparser.model/RssChannel // com.prof18.rssparser/RssParser.parse|parse(kotlin.String){}[0]
+    final suspend fun parse(kotlin/ByteArray, kotlin/String? = ...): com.prof18.rssparser.model/RssChannel // com.prof18.rssparser/RssParser.parse|parse(kotlin.ByteArray;kotlin.String?){}[0]
+    final suspend fun parse(kotlin/String, kotlin/String? = ...): com.prof18.rssparser.model/RssChannel // com.prof18.rssparser/RssParser.parse|parse(kotlin.String;kotlin.String?){}[0]
 }
 
 final class com.prof18.rssparser/RssParserBuilder : com.prof18.rssparser/RssParser.Builder { // com.prof18.rssparser/RssParserBuilder|null[0]
+    constructor <init>() // com.prof18.rssparser/RssParserBuilder.<init>|<init>(){}[0]
+
     final fun build(): com.prof18.rssparser/RssParser // com.prof18.rssparser/RssParserBuilder.build|build(){}[0]
-
-    // Targets: [apple]
-    constructor <init>(platform.Foundation/NSURLSession = ...) // com.prof18.rssparser/RssParserBuilder.<init>|<init>(platform.Foundation.NSURLSession){}[0]
-
-    // Targets: [js, wasmJs]
-    constructor <init>(io.ktor.client/HttpClient = ...) // com.prof18.rssparser/RssParserBuilder.<init>|<init>(io.ktor.client.HttpClient){}[0]
+    final fun recovery(com.prof18.rssparser/XmlFeedRecovery): com.prof18.rssparser/RssParserBuilder // com.prof18.rssparser/RssParserBuilder.recovery|recovery(com.prof18.rssparser.XmlFeedRecovery){}[0]
 }
 
 final fun com.prof18.rssparser/RssParser(): com.prof18.rssparser/RssParser // com.prof18.rssparser/RssParser|RssParser(){}[0]

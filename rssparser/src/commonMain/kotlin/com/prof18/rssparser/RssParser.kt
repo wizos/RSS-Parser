@@ -1,7 +1,7 @@
 package com.prof18.rssparser
 
 import com.prof18.rssparser.exception.RssParsingException
-import com.prof18.rssparser.internal.XmlFetcher
+import com.prof18.rssparser.internal.ParserInput
 import com.prof18.rssparser.internal.XmlParser
 import com.prof18.rssparser.model.RssChannel
 import kotlinx.coroutines.Dispatchers
@@ -10,8 +10,8 @@ import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
 public class RssParser internal constructor(
-    private val xmlFetcher: XmlFetcher,
     private val xmlParser: XmlParser,
+    private val recovery: XmlFeedRecovery = XmlFeedRecovery.Default,
 ) {
 
     private val coroutineContext: CoroutineContext =
@@ -25,79 +25,39 @@ public class RssParser internal constructor(
     }
 
     /**
-     * Downloads and parses an RSS feed from an [url] and returns an [RssChannel].
+     * Parses an RSS feed provided by [rawRssFeed] and returns an [RssChannel].
      *
-     * If the parsing fails because the XML is malformed, it will re-download the XML as a string,
-     * escape any invalid XML entities, and try to parse it again. If it still fails, it will
-     * throw an [RssParsingException].
+     * If parsing fails, the configured [XmlFeedRecovery] may return repaired XML for one retry.
      */
-    public suspend fun getRssChannel(url: String): RssChannel = withContext(coroutineContext) {
-        val parserInput = xmlFetcher.fetchXml(url)
-        return@withContext try {
-            xmlParser.parseXML(parserInput)
-        } catch (_: RssParsingException) {
-            val xmlAsString = xmlFetcher.fetchXmlAsString(url)
-            val escapedXml = escapeInvalidXmlEntities(xmlAsString)
-            val escapedInput = xmlParser.generateParserInputFromString(escapedXml)
-            xmlParser.parseXML(escapedInput)
-        }
-    }
+    public suspend fun parse(rawRssFeed: String, baseUrl: String? = null): RssChannel =
+        parseWithRecovery(
+            parserInput = xmlParser.generateParserInput(rawRssFeed, baseUrl),
+            rawRssFeed = rawRssFeed,
+            baseUrl = baseUrl,
+        )
 
     /**
-     * Parses an RSS feed provided by [rawRssFeed] and returns an [RssChannel]
+     * Parses raw feed [bytes], preserving XML encoding detection on platforms that support it.
      */
-    public suspend fun parse(rawRssFeed: String): RssChannel = withContext(coroutineContext) {
-        val parserInput = xmlParser.generateParserInputFromString(rawRssFeed)
+    public suspend fun parse(bytes: ByteArray, baseUrl: String? = null): RssChannel =
+        parseWithRecovery(
+            parserInput = xmlParser.generateParserInput(bytes, baseUrl),
+            rawRssFeed = bytes.decodeToString(),
+            baseUrl = baseUrl,
+        )
+
+    private suspend fun parseWithRecovery(
+        parserInput: ParserInput,
+        rawRssFeed: String,
+        baseUrl: String?,
+    ): RssChannel = withContext(coroutineContext) {
         return@withContext try {
             xmlParser.parseXML(parserInput)
-        } catch (_: RssParsingException) {
-            // Try again with additional entity escaping
-            val escapedXml = escapeInvalidXmlEntities(rawRssFeed)
-            val input = xmlParser.generateParserInputFromString(escapedXml)
+        } catch (failure: RssParsingException) {
+            val repairedXml = recovery.repair(rawRssFeed, failure) ?: throw failure
+            val input = xmlParser.generateParserInput(repairedXml, baseUrl)
             xmlParser.parseXML(input)
         }
-    }
-
-    /**
-     * Escapes invalid XML entities in the input string and fixes common XML issues.
-     * - Escapes standalone ampersands that aren't part of valid entity references
-     * - Fixes self-closing or unclosed tags that should be properly closed
-     * - Fixes duplicate closing tags with content between them
-     * - Handles special cases for ampersands in URLs and text content
-     */
-    private fun escapeInvalidXmlEntities(xml: String): String {
-        return xml
-            // Fix standalone ampersands in URLs and text
-            .replace(
-                Regex("&(?!(amp;|lt;|gt;|quot;|apos;|#[0-9]+;|#x[0-9a-fA-F]+;))"),
-                "&amp;"
-            )
-            // Fix duplicate closing tags with content between them
-            // Example: <category></category><![CDATA[News]]></category> -> <category><![CDATA[News]]></category>
-            .replace(
-                Regex("<([^>]+)></\\1>([^<]+|<!\\[CDATA\\[.+?\\]\\]>)</\\1>"),
-                "<$1>$2</$1>"
-            )
-            // Fix self-closing tags, but only if they don't already have content
-            // This regex checks that there's no content between the opening and closing tags
-            .replace(
-                Regex("<(link|source|category|guid|enclosure|media:content|media:thumbnail)([^>]*?)>\\s*</\\1>"),
-                "<$1$2></$1>"
-            )
-            // Fix other common HTML tags that might be self-closing
-            .replace(
-                Regex("<(meta|img|br|hr|input|area|base|col|embed|keygen|param|track|wbr)([^>]*?)/?>(?!</\\1>)"),
-                "<$1$2></$1>"
-            )
-            // Additional pass to catch any ampersands in CDATA sections or attribute values that might have been missed
-            .replace(
-                Regex("(<!\\[CDATA\\[.*?)&(?!(amp;|lt;|gt;|quot;|apos;|#[0-9]+;|#x[0-9a-fA-F]+;))(.*?\\]\\]>)"),
-                "$1&amp;$3"
-            )
-            .replace(
-                Regex("=\"(.*?)&(?!(amp;|lt;|gt;|quot;|apos;|#[0-9]+;|#x[0-9a-fA-F]+;))(.*?)\""),
-                "=\"$1&amp;$3\""
-            )
     }
 }
 

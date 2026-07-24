@@ -8,6 +8,7 @@ import com.prof18.rssparser.model.RawMediaContent
 import com.prof18.rssparser.model.RssChannel
 import com.prof18.rssparser.model.RssImage
 import com.prof18.rssparser.model.RssItem
+import com.prof18.rssparser.model.RssMediaGroup
 import com.prof18.rssparser.model.YoutubeChannelData
 import com.prof18.rssparser.model.YoutubeItemData
 
@@ -21,7 +22,10 @@ internal class ChannelFactory {
     var youtubeChannelDataBuilder = YoutubeChannelData.Builder()
     var youtubeItemDataBuilder = YoutubeItemData.Builder()
     var rawEnclosureBuilder = RawEnclosure.Builder()
-    var rawMediaContentBuilder = RawMediaContent.Builder()
+    private var rawMediaContent: RawMediaContent? = null
+    private val mediaContents: MutableList<RawMediaContent> = mutableListOf()
+    private val mediaGroupBuilders: MutableList<RssMediaGroup.Builder> = mutableListOf()
+    private var activeMediaGroupBuilder: RssMediaGroup.Builder? = null
 
     // This image url is extracted from the content and the description of the rss item.
     // It's a fallback just in case there aren't any images in the enclosure tag.
@@ -35,7 +39,9 @@ internal class ChannelFactory {
         articleBuilder.itunesArticleData(itunesItemData)
         articleBuilder.youtubeItemData(youtubeItemDataBuilder.build())
         articleBuilder.rawEnclosure(rawEnclosureBuilder.build())
-        articleBuilder.rawMediaContent(rawMediaContentBuilder.build())
+        articleBuilder.rawMediaContent(rawMediaContent)
+        articleBuilder.mediaContents(mediaContents.toList())
+        articleBuilder.mediaGroups(mediaGroupBuilders.mapNotNull { it.build() })
         articleBuilder.build()?.let { channelBuilder.addItem(it) }
         // Reset temp data
         imageUrlFromContent = null
@@ -43,7 +49,64 @@ internal class ChannelFactory {
         itunesArticleBuilder = ItunesItemData.Builder()
         youtubeItemDataBuilder = YoutubeItemData.Builder()
         rawEnclosureBuilder = RawEnclosure.Builder()
-        rawMediaContentBuilder = RawMediaContent.Builder()
+        rawMediaContent = null
+        mediaContents.clear()
+        mediaGroupBuilders.clear()
+        activeMediaGroupBuilder = null
+    }
+
+    fun startMediaGroup() {
+        activeMediaGroupBuilder = RssMediaGroup.Builder().also(mediaGroupBuilders::add)
+    }
+
+    fun endMediaGroup() {
+        activeMediaGroupBuilder = null
+    }
+
+    fun addMediaContent(
+        url: String?,
+        type: String?,
+        medium: String?,
+        includeInLegacyFields: Boolean = true,
+    ) {
+        val content = RawMediaContent.Builder()
+            .url(url)
+            .type(type)
+            .medium(medium)
+            .build()
+            ?: return
+        activeMediaGroupBuilder?.addContent(content) ?: mediaContents.add(content)
+
+        if (includeInLegacyFields) {
+            rawMediaContent = content
+            when {
+                !medium.isNullOrBlank() -> when {
+                    medium.equals("image", ignoreCase = true) -> articleBuilder.image(url)
+                    medium.equals("audio", ignoreCase = true) -> articleBuilder.audioIfNull(url)
+                    medium.equals("video", ignoreCase = true) -> articleBuilder.videoIfNull(url)
+                }
+                !type.isNullOrBlank() -> when {
+                    type.contains("image", ignoreCase = true) -> articleBuilder.image(url)
+                    type.contains("audio", ignoreCase = true) -> articleBuilder.audioIfNull(url)
+                    type.contains("video", ignoreCase = true) -> articleBuilder.videoIfNull(url)
+                }
+            }
+        }
+    }
+
+    fun setMediaGroupTitle(title: String?) {
+        activeMediaGroupBuilder?.title(title)
+    }
+
+    fun setMediaGroupDescription(description: String?) {
+        activeMediaGroupBuilder?.description(description)
+    }
+
+    fun setMediaGroupThumbnail(url: String?, includeInLegacyFields: Boolean = true) {
+        activeMediaGroupBuilder?.thumbnail(url)
+        if (includeInLegacyFields) {
+            articleBuilder.image(url)
+        }
     }
 
     fun buildItunesOwner() {

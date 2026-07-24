@@ -13,7 +13,7 @@ internal expect suspend fun readFileFromResourcesAsString(
 
 internal expect val currentTarget: CurrentTarget
 
-internal const val BASE_FEED_URL = "https://www.base-feed-url.com"
+internal const val BASE_FEED_URL = "https://www.base-feed-url.com/feed.xml"
 
 internal suspend fun parseFeed(
     feedPath: String,

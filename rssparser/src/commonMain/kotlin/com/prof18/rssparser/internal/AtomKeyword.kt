@@ -54,3 +54,14 @@ internal enum class AtomKeyword(val value: String) {
         }
     }
 }
+
+internal fun resolveAtomLink(baseUrl: String?, href: String?): String? {
+    if (baseUrl == null || href?.startsWith("/") != true) return href
+    if (href.startsWith("//")) {
+        val schemeEnd = baseUrl.indexOf(':')
+        return if (schemeEnd > 0) baseUrl.substring(0, schemeEnd + 1) + href else href
+    }
+    val schemeEnd = baseUrl.indexOf("://")
+    val pathStart = if (schemeEnd >= 0) baseUrl.indexOf('/', schemeEnd + 3) else -1
+    return (if (pathStart >= 0) baseUrl.substring(0, pathStart) else baseUrl.trimEnd('/')) + href
+}

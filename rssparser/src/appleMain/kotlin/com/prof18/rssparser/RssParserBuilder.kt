@@ -1,27 +1,24 @@
 package com.prof18.rssparser
 
-import com.prof18.rssparser.internal.IosXmlFetcher
 import com.prof18.rssparser.internal.IosXmlParser
 import kotlinx.coroutines.Dispatchers
-import platform.Foundation.NSURLSession
 
 /**
  * A builder that creates new instances of [RssParser]
- *
- * @property nsUrlSession A custom [NSURLSession] that can be provided by the caller.
- *  If not provided, the created `RssParser` will use the shared session.
  */
-public class RssParserBuilder(
-    private val nsUrlSession: NSURLSession = NSURLSession.sharedSession,
-): RssParser.Builder {
+public class RssParserBuilder : RssParser.Builder {
+    private var recovery: XmlFeedRecovery = XmlFeedRecovery.Default
+
+    public fun recovery(recovery: XmlFeedRecovery): RssParserBuilder = apply {
+        this.recovery = recovery
+    }
+
     override fun build(): RssParser {
         return RssParser(
-            xmlFetcher = IosXmlFetcher(
-                nsUrlSession = nsUrlSession,
-            ),
             xmlParser = IosXmlParser(
                 Dispatchers.Default
             ),
+            recovery = recovery,
         )
     }
 }

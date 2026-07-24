@@ -10,18 +10,6 @@ plugins {
 }
 
 apiValidation {
-    ignoredProjects.addAll(
-        listOf(
-            "multiplatform",
-            "shared",
-            "androidApp",
-            "desktopApp",
-            "webApp",
-            "android",
-            "java"
-        )
-    )
-
     @OptIn(ExperimentalBCVApi::class)
     klib {
         enabled = true

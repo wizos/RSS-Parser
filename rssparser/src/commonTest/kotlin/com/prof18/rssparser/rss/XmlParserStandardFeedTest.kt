@@ -72,6 +72,13 @@ class XmlParserStandardFeedTest : XmlParserTestExecutor() {
                     type = null,
                     medium = "image",
                 ),
+                mediaContents = listOf(
+                    RawMediaContent(
+                        url = "https://cdn57.androidauthority.net/wp-content/uploads/2019/02/Whats-next-with-5g--500x260.jpg",
+                        type = null,
+                        medium = "image",
+                    ),
+                ),
             )
         )
     )

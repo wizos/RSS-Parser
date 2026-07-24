@@ -1,12 +1,9 @@
 package com.prof18.rssparser
 
 import com.prof18.rssparser.exception.RssParsingException
-import com.prof18.rssparser.internal.ParserInput
-import com.prof18.rssparser.internal.XmlFetcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
-import kotlin.test.fail
 
 class UnsupportedXmlParserTest {
 
@@ -24,7 +21,6 @@ class UnsupportedXmlParserTest {
         """.trimIndent()
 
         val rssParser = RssParser(
-            xmlFetcher = UnusedFetcher,
             xmlParser = createXmlParser(),
         )
 
@@ -43,17 +39,11 @@ class UnsupportedXmlParserTest {
         """.trimIndent()
 
         val rssParser = RssParser(
-            xmlFetcher = UnusedFetcher,
             xmlParser = createXmlParser(),
         )
 
         assertFailsWith<RssParsingException> {
             rssParser.parse(truncatedFeed)
         }
-    }
-
-    private object UnusedFetcher : XmlFetcher {
-        override suspend fun fetchXml(url: String): ParserInput = fail("Should not be called")
-        override suspend fun fetchXmlAsString(url: String): String = fail("Should not be called")
     }
 }

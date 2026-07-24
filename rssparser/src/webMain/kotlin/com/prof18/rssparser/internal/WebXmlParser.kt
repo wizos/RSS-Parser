@@ -73,9 +73,12 @@ internal class WebXmlParser(
         return@withContext feedEntity.toRssChannel(input.baseUrl)
     }
 
-    override fun generateParserInputFromString(rawRssFeed: String): ParserInput =
+    override fun generateParserInput(rawRssFeed: String, baseUrl: String?): ParserInput =
         ParserInput(
             data = rawRssFeed,
-            baseUrl = null
+            baseUrl = baseUrl,
         )
+
+    override fun generateParserInput(bytes: ByteArray, baseUrl: String?): ParserInput =
+        ParserInput(bytes.decodeToString(), baseUrl)
 }

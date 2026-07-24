@@ -35,6 +35,11 @@ internal class RssFeedHandler : FeedHandler {
                     isInsideOpenGraphMetadata = true
                 }
             }
+            RssKeyword.ITEM_MEDIA_GROUP.value -> {
+                if (isInsideItem) {
+                    channelFactory.startMediaGroup()
+                }
+            }
             RssKeyword.CHANNEL_ITUNES_OWNER.value -> isInsideItunesOwner = true
             RssKeyword.IMAGE.value -> {
                 when {
@@ -51,29 +56,14 @@ internal class RssFeedHandler : FeedHandler {
                     val type = attributes?.getValue(RssKeyword.ITEM_TYPE.value)
                     val medium = attributes?.getValue(RssKeyword.ITEM_MEDIUM.value)
 
-                    channelFactory.rawMediaContentBuilder.url(url)
-                    channelFactory.rawMediaContentBuilder.type(type)
-                    channelFactory.rawMediaContentBuilder.medium(medium)
-
-                    when {
-                        !medium.isNullOrBlank() -> when {
-                            medium.equals("image", ignoreCase = true) -> channelFactory.articleBuilder.image(url)
-                            medium.equals("audio", ignoreCase = true) -> channelFactory.articleBuilder.audioIfNull(url)
-                            medium.equals("video", ignoreCase = true) -> channelFactory.articleBuilder.videoIfNull(url)
-                        }
-                        !type.isNullOrBlank() -> when {
-                            type.contains("image", ignoreCase = true) -> channelFactory.articleBuilder.image(url)
-                            type.contains("audio", ignoreCase = true) -> channelFactory.articleBuilder.audioIfNull(url)
-                            type.contains("video", ignoreCase = true) -> channelFactory.articleBuilder.videoIfNull(url)
-                        }
-                    }
+                    channelFactory.addMediaContent(url, type, medium)
                 }
             }
 
             RssKeyword.ITEM_THUMBNAIL.value -> {
                 if (isInsideItem) {
                     val url = attributes?.getValue(RssKeyword.URL.value)
-                    channelFactory.articleBuilder.image(url)
+                    channelFactory.setMediaGroupThumbnail(url)
                 }
             }
 
@@ -199,6 +189,18 @@ internal class RssFeedHandler : FeedHandler {
 
                     RssKeyword.ITEM_THUMB.value -> {
                         channelFactory.articleBuilder.image(text)
+                    }
+
+                    RssKeyword.ITEM_MEDIA_TITLE.value -> {
+                        channelFactory.setMediaGroupTitle(text)
+                    }
+
+                    RssKeyword.ITEM_MEDIA_DESCRIPTION.value -> {
+                        channelFactory.setMediaGroupDescription(text)
+                    }
+
+                    RssKeyword.ITEM_MEDIA_GROUP.value -> {
+                        channelFactory.endMediaGroup()
                     }
 
                     RssKeyword.ITEM_ITUNES_EPISODE_TYPE.value -> {

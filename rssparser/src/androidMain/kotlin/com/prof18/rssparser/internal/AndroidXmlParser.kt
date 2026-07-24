@@ -27,6 +27,7 @@ import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import org.xmlpull.v1.XmlPullParserFactory
+import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.nio.charset.Charset
 
@@ -72,16 +73,21 @@ internal class AndroidXmlParser(
         } catch (exception: XmlPullParserException) {
             throw RssParsingException(
                 message = "Something went wrong when parsing the feed. Please check if the XML is valid",
-                cause = exception
+                cause = exception,
+                lineNumber = exception.lineNumber,
+                columnNumber = exception.columnNumber,
             )
         } finally {
             input.inputStream.closeQuietly()
         }
     }
 
-    override fun generateParserInputFromString(rawRssFeed: String): ParserInput {
+    override fun generateParserInput(rawRssFeed: String, baseUrl: String?): ParserInput {
         val cleanedXml = rawRssFeed.trim()
         val inputStream: InputStream = cleanedXml.byteInputStream(charset ?: Charsets.UTF_8)
-        return ParserInput(inputStream)
+        return ParserInput(inputStream, baseUrl)
     }
+
+    override fun generateParserInput(bytes: ByteArray, baseUrl: String?): ParserInput =
+        ParserInput(ByteArrayInputStream(bytes), baseUrl)
 }

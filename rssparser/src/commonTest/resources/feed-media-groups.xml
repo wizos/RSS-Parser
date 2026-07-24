@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+    <channel>
+        <title>Media groups</title>
+        <link>https://example.com</link>
+        <description>Media RSS group coverage</description>
+        <item>
+            <guid>media-groups-item</guid>
+            <title>Grouped media item</title>
+            <media:group>
+                <media:title>Gallery</media:title>
+                <media:description>Two images</media:description>
+                <media:thumbnail url="https://example.com/gallery-thumb.jpg"/>
+                <media:content url="https://example.com/image-1.jpg" type="image/jpeg" medium="image"/>
+                <media:content url="https://example.com/image-2.webp" type="image/webp" medium="image"/>
+            </media:group>
+            <media:group>
+                <media:title>Video</media:title>
+                <media:description>One video</media:description>
+                <media:thumbnail url="https://example.com/video-thumb.jpg"/>
+                <media:content url="https://example.com/video.mp4" type="video/mp4" medium="video"/>
+            </media:group>
+            <media:content url="https://example.com/audio.mp3" type="audio/mpeg" medium="audio"/>
+        </item>
+    </channel>
+</rss>

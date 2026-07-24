@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+    <channel>
+        <title>Missing namespace declaration</title>
+        <link>https://example.com</link>
+        <description>WordPress-like malformed namespace input</description>
+        <item>
+            <title>Still parseable on Android and JVM</title>
+            <link>https://example.com/item</link>
+            <wfw:commentRss>https://example.com/item/feed</wfw:commentRss>
+        </item>
+    </channel>
+</rss>

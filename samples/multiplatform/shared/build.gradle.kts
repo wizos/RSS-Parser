@@ -57,6 +57,19 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":rssparser"))
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.ktor.client.core)
+        }
+        androidMain.dependencies {
+            implementation(libs.ktor.client.okhttp)
+        }
+        getByName("desktopMain").dependencies {
+            implementation(libs.ktor.client.okhttp)
+        }
+        appleMain.dependencies {
+            implementation(libs.ktor.client.darwin)
+        }
+        getByName("webMain").dependencies {
+            implementation(libs.ktor.client.js)
         }
     }
 }

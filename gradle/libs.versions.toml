@@ -14,7 +14,7 @@ coroutines = "1.11.0"
 kotlinx-serialization = "1.11.0"
 xmlutil = "1.0.0"
 ktor = "3.5.1"
-library-version-name = "6.1.7"
+library-version-name = "7.0.0-SNAPSHOT"
 
 # Sample dependencies
 androidx-activity = "1.9.3"
@@ -35,7 +35,6 @@ activity-compose = "1.9.3"
 [libraries]
 # Library dependencies
 com-squareup-okhttp3 = { module = "com.squareup.okhttp3:okhttp", version.ref = "com-squareup-okhttp3" }
-com-squareup-okhttp3-coroutines = { module = "com.squareup.okhttp3:okhttp-coroutines", version.ref = "com-squareup-okhttp3" }
 org-robolectric = { module = "org.robolectric:robolectric", version.ref = "org-robolectric" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
@@ -44,6 +43,8 @@ xmlutil = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 
 # Sample dependencies
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "androidx-activity" }

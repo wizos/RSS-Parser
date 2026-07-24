@@ -45,6 +45,13 @@ class XmlParserMediaContentTypeTest : XmlParserTestExecutor() {
                     type = "application/java-archive; charset=binary",
                     medium = null,
                 ),
+                mediaContents = mediaContents(
+                    RawMediaContent(
+                        url = "https://example.com/files/large-file.zip/download",
+                        type = "application/java-archive; charset=binary",
+                        medium = null,
+                    ),
+                ),
             ),
             // image/jpeg with medium=image: assigned to image
             RssItem(
@@ -69,6 +76,13 @@ class XmlParserMediaContentTypeTest : XmlParserTestExecutor() {
                     url = "https://example.com/images/photo.jpg",
                     type = "image/jpeg",
                     medium = "image",
+                ),
+                mediaContents = mediaContents(
+                    RawMediaContent(
+                        url = "https://example.com/images/photo.jpg",
+                        type = "image/jpeg",
+                        medium = "image",
+                    ),
                 ),
             ),
             // video/mp4 with medium=video: assigned to video, NOT image
@@ -95,6 +109,13 @@ class XmlParserMediaContentTypeTest : XmlParserTestExecutor() {
                     type = "video/mp4",
                     medium = "video",
                 ),
+                mediaContents = mediaContents(
+                    RawMediaContent(
+                        url = "https://example.com/videos/clip.mp4",
+                        type = "video/mp4",
+                        medium = "video",
+                    ),
+                ),
             ),
             // audio/mpeg with medium=audio: assigned to audio
             RssItem(
@@ -119,6 +140,13 @@ class XmlParserMediaContentTypeTest : XmlParserTestExecutor() {
                     url = "https://example.com/audio/track.mp3",
                     type = "audio/mpeg",
                     medium = "audio",
+                ),
+                mediaContents = mediaContents(
+                    RawMediaContent(
+                        url = "https://example.com/audio/track.mp3",
+                        type = "audio/mpeg",
+                        medium = "audio",
+                    ),
                 ),
             ),
             // No type or medium: NOT assigned to image (safety)
@@ -145,6 +173,13 @@ class XmlParserMediaContentTypeTest : XmlParserTestExecutor() {
                     type = null,
                     medium = null,
                 ),
+                mediaContents = mediaContents(
+                    RawMediaContent(
+                        url = "https://example.com/images/untyped.jpg",
+                        type = null,
+                        medium = null,
+                    ),
+                ),
             ),
             // medium=document: must NOT be assigned to image
             RssItem(
@@ -170,6 +205,13 @@ class XmlParserMediaContentTypeTest : XmlParserTestExecutor() {
                     type = null,
                     medium = "document",
                 ),
+                mediaContents = mediaContents(
+                    RawMediaContent(
+                        url = "https://example.com/files/doc.pdf",
+                        type = null,
+                        medium = "document",
+                    ),
+                ),
             ),
         ),
     )
@@ -179,4 +221,6 @@ class XmlParserMediaContentTypeTest : XmlParserTestExecutor() {
         val channel = parseFeed("feed-media-content-type.xml")
         assertEquals(expectedChannel, channel)
     }
+
+    private fun mediaContents(content: RawMediaContent): List<RawMediaContent> = listOf(content)
 }

@@ -5,6 +5,7 @@ import com.prof18.rssparser.internal.ChannelFactory
 import com.prof18.rssparser.internal.FeedHandler
 import com.prof18.rssparser.internal.RssKeyword
 import com.prof18.rssparser.internal.getValueOrNull
+import com.prof18.rssparser.internal.resolveAtomLink
 import com.prof18.rssparser.model.RssChannel
 
 internal class AtomFeedHandler(
@@ -31,6 +32,7 @@ internal class AtomFeedHandler(
             AtomKeyword.YOUTUBE_MEDIA_GROUP.value -> {
                 if (isInsideItem) {
                     isInsideYoutubeMediaGroup = true
+                    channelFactory.startMediaGroup()
                 }
             }
 
@@ -52,7 +54,7 @@ internal class AtomFeedHandler(
                     // Some feeds have full links
                     href?.startsWith("/") == true
                 ) {
-                    baseFeedUrl + href
+                    resolveAtomLink(baseFeedUrl, href)
                 } else {
                     href
                 }
@@ -71,30 +73,18 @@ internal class AtomFeedHandler(
 
             AtomKeyword.MEDIA_GROUP_CONTENT.value -> {
                 if (isInsideItem) {
+                    val url = attributes.getValueOrNull(RssKeyword.URL.value) as? String
+                    val type = attributes[RssKeyword.ITEM_TYPE.value] as? String
+                    val medium = attributes[RssKeyword.ITEM_MEDIUM.value] as? String
+                    channelFactory.addMediaContent(
+                        url = url,
+                        type = type,
+                        medium = medium,
+                        includeInLegacyFields = !isInsideYoutubeMediaGroup,
+                    )
+
                     if (isInsideYoutubeMediaGroup) {
-                        val url = attributes.getValueOrNull(AtomKeyword.YOUTUBE_MEDIA_GROUP_CONTENT_URL.value) as? String
                         channelFactory.youtubeItemDataBuilder.videoUrl(url)
-                    } else {
-                        val url = attributes[RssKeyword.URL.value] as? String
-                        val type = attributes[RssKeyword.ITEM_TYPE.value] as? String
-                        val medium = attributes[RssKeyword.ITEM_MEDIUM.value] as? String
-
-                        channelFactory.rawMediaContentBuilder.url(url)
-                        channelFactory.rawMediaContentBuilder.type(type)
-                        channelFactory.rawMediaContentBuilder.medium(medium)
-
-                        when {
-                            !medium.isNullOrBlank() -> when {
-                                medium.equals("image", ignoreCase = true) -> channelFactory.articleBuilder.image(url)
-                                medium.equals("audio", ignoreCase = true) -> channelFactory.articleBuilder.audioIfNull(url)
-                                medium.equals("video", ignoreCase = true) -> channelFactory.articleBuilder.videoIfNull(url)
-                            }
-                            !type.isNullOrBlank() -> when {
-                                type.contains("image", ignoreCase = true) -> channelFactory.articleBuilder.image(url)
-                                type.contains("audio", ignoreCase = true) -> channelFactory.articleBuilder.audioIfNull(url)
-                                type.contains("video", ignoreCase = true) -> channelFactory.articleBuilder.videoIfNull(url)
-                            }
-                        }
                     }
                 }
             }
@@ -104,9 +94,11 @@ internal class AtomFeedHandler(
                 if (isInsideItem) {
                     if (isInsideYoutubeMediaGroup) {
                         channelFactory.youtubeItemDataBuilder.thumbnailUrl(url)
-                    } else {
-                        channelFactory.articleBuilder.image(url)
                     }
+                    channelFactory.setMediaGroupThumbnail(
+                        url = url,
+                        includeInLegacyFields = !isInsideYoutubeMediaGroup,
+                    )
                 }
             }
 
@@ -138,6 +130,7 @@ internal class AtomFeedHandler(
 
             AtomKeyword.YOUTUBE_MEDIA_GROUP.value -> {
                 isInsideYoutubeMediaGroup = false
+                channelFactory.endMediaGroup()
             }
 
             AtomKeyword.ENTRY_ITEM.value -> {
@@ -223,12 +216,14 @@ internal class AtomFeedHandler(
             AtomKeyword.YOUTUBE_MEDIA_GROUP_TITLE.value -> {
                 if (isInsideItem && isInsideYoutubeMediaGroup) {
                     channelFactory.youtubeItemDataBuilder.title(text)
+                    channelFactory.setMediaGroupTitle(text)
                 }
             }
 
             AtomKeyword.YOUTUBE_MEDIA_GROUP_DESCRIPTION.value -> {
                 if (isInsideItem && isInsideYoutubeMediaGroup) {
                     channelFactory.youtubeItemDataBuilder.description(text)
+                    channelFactory.setMediaGroupDescription(text)
                 }
             }
         }

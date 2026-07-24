@@ -6,7 +6,7 @@
 
 **RSS Parser** is a Kotlin Multiplatform library for parsing RSS, Atom and RDF feeds. It supports Android, JVM, iOS, macOS, tvOS, watchOS, wasmJS and JS.
 
-With **RSS Parser**, you can fetch plenty of useful information from any RSS channel, be it a blog, magazine, a YouTube channel or even a podcast feed.
+With **RSS Parser**, you can read plenty of useful information from any RSS channel, be it a blog, magazine, a YouTube channel or even a podcast feed.
 
 ## Table of Contents
 
@@ -18,8 +18,7 @@ With **RSS Parser**, you can fetch plenty of useful information from any RSS cha
 - [Usage](#usage)
     - [Creating a RssParser instance](#creating-a-rssparser-instance)
         - [Builder](#builder)
-    - [RSS Parsing from URL](#rss-parsing-from-url)
-    - [RSS Parsing from string](#rss-parsing-from-string)
+    - [RSS Parsing](#rss-parsing)
     - [Using the library in a Java project](#using-the-library-in-a-java-project)
 - [Error handling](#error-handling)
 - [Parser behavior notes](#parser-behavior-notes)
@@ -75,6 +74,10 @@ allprojects {
 ```
 
 ### Breaking changes
+
+#### Version 7.x
+
+RSS Parser only parses feed data. URL fetching and its OkHttp/Ktor dependencies were removed. Callers now download feeds with their own network stack and pass XML as a `String` or raw `ByteArray`.
 
 #### Version 6.1.0
 
@@ -145,6 +148,7 @@ Items support the following attributes:
 - Video
 - Comments URL
 - Raw enclosure (URL, length and type)
+- Media RSS groups (title, description, thumbnail and all media contents)
 - Itunes Data:
   - Author
   - Duration
@@ -181,50 +185,27 @@ val rssParser: RssParser = RssParser()
 
 #### Builder
 
-An `RssParser` instance can also be built with a platform-specific `RssParserBuilder`. Some custom and optional fields can be provided to the builder.
+An `RssParser` instance can also be built with a platform-specific `RssParserBuilder`.
 
-**On Android and the JVM**, a custom `OkHttpClient` instance and a custom `Charset` can be provided. If an `OkHttpClient` instance is not provided, the library will create one. If no `Charset` is provided, it will automatically be inferred from the feed XML.
+**On Android and the JVM**, a custom `Charset` can be provided. If none is provided, it is inferred from raw XML bytes.
 
 ```kotlin
 val builder = RssParserBuilder(
-    callFactory = OkHttpClient(),
     charset = Charsets.UTF_8,
 )
 val rssParser = builder.build() 
 ```
 
-**On iOS**, a custom `NSURLSession` instance can be provided. If an `NSURLSession` instance is not provided, the library will use the shared `NSURLSession`. 
+### RSS Parsing
 
-```kotlin
-val builder = RssParserBuilder(
-    nsUrlSession = NSURLSession(),
-)
-val rssParser = builder.build() 
-```
-
-**On Web (JS/Wasm)**, a custom Ktor `HttpClient` instance can be provided. If a `HttpClient` instance is not provided, the library will create one.
-
-```kotlin
-val builder = RssParserBuilder(
-    httpClient = HttpClient(),
-)
-val rssParser = builder.build()
-```
-
-### RSS Parsing from URL
-To parse an RSS feed from a URL, the suspending `getRssChannel` function can be used.
-
-```kotlin
-val rssChannel: RssChannel = rssParser.getRssChannel("https://www.rssfeed.com")
-```
-
-### RSS Parsing from string
-
-To parse an RSS feed from an XML string, the suspending `parse` function can be used
+Download feeds with your application's network stack, then pass a string or raw bytes. Supplying `baseUrl` preserves relative-link resolution.
 
 ```kotlin
 val xmlString: String = "xml-string"
-val rssChannel: RssChannel = rssParser.parse(xmlString)
+val rssChannel = rssParser.parse(xmlString, baseUrl = feedUrl)
+
+val xmlBytes: ByteArray = responseBytes
+val rssChannelFromBytes = rssParser.parse(xmlBytes, baseUrl = feedUrl)
 ```
 
 ### Using the library in a Java project
@@ -238,8 +219,8 @@ the `kotlinx-coroutines-core` library.
 ```kotlin
 private val bridgeScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-fun parseFeed(parser: RssParser, url: String): CompletableFuture<RssChannel> = bridgeScope.future {
-    parser.getRssChannel(url)
+fun parseFeed(parser: RssParser, xml: ByteArray, url: String): CompletableFuture<RssChannel> = bridgeScope.future {
+    parser.parse(xml, url)
 }
 ```
 
@@ -265,27 +246,47 @@ More info in the official documentation [here](https://github.com/Kotlin/kotlinx
 
 ## Error handling
 
-When loading feeds from a URL, handle parsing and network failures explicitly:
+Handle network failures in your network layer and parsing failures here:
 
 ```kotlin
 try {
-    val channel = rssParser.getRssChannel("https://example.com/feed.xml")
+    val channel = rssParser.parse(responseBytes, "https://example.com/feed.xml")
     // Use parsed channel
-} catch (e: HttpException) {
-    // Non-success HTTP status
-    println("HTTP error ${e.code}: ${e.message}")
 } catch (e: RssParsingException) {
     // XML could not be parsed even after fallback cleanup
-    println("Parsing error: ${e.message}")
+    println("Parsing error at ${e.lineNumber}:${e.columnNumber}: ${e.cause?.message}")
 } catch (e: Throwable) {
     // I/O and platform-specific errors
     println("Unexpected error: ${e.message}")
 }
 ```
 
+The cleanup pass can be replaced or disabled on every platform-specific builder:
+
+```kotlin
+val rssParser = RssParserBuilder()
+    .recovery(XmlFeedRecovery.None)
+    .build()
+```
+
+Custom recovery is attempted at most once:
+
+```kotlin
+val rssParser = RssParserBuilder()
+    .recovery(XmlFeedRecovery { xml, _ ->
+        xml.replace(
+            "<rss ",
+            "<rss xmlns:wfw=\"http://wellformedweb.org/CommentAPI/\" ",
+        )
+    })
+    .build()
+```
+
 ## Parser behavior notes
 
 - If parsing fails with a `RssParsingException`, the parser retries with an additional malformed-XML cleanup pass.
+- Android and JVM parsing exceptions expose one-based `lineNumber` and `columnNumber` values when the underlying XML parser reports them.
+- Ungrouped Media RSS contents are preserved in `RssItem.mediaContents`; explicit groups are preserved in `RssItem.mediaGroups`. The legacy `rawMediaContent` field remains available.
 - Item and channel image extraction uses fallbacks. For example, iTunes image values are used when RSS image tags are missing.
 - For Atom links, entry links prioritize `rel="alternate"` and avoid non-article relations like `related` media links.
 - YouTube metadata for `YoutubeItemData` is only extracted from the proper `media:group` scope.
@@ -305,12 +306,12 @@ Version 6 of the library introduced the following breaking changes:
 - `com.prof.rssparser.Parser.Builder` has been moved and renamed to `com.prof18.rssparser.RssParserBuilder`;
 - `com.prof.rssparser.Channel` has been moved and renamed to `com.prof18.rssparser.model.RssChannel`;
 - `com.prof.rssparser.Article` has been moved and renamed to `com.prof18.rssparser.model.RssItem`;
-- `com.prof.rssparser.HTTPException` has been moved and renamed to `com.prof18.rssparser.exception.HttpException`;
+- Network exceptions are now owned by the caller's network stack;
 - `com.prof.rssparser.Image` has been moved and renamed to `com.prof18.rssparser.model.RssImage`;
 - `com.prof.rssparser.ItunesOwner` has been moved to `com.prof18.rssparser.model.ItunesOwner`;
 - `com.prof.rssparser.ItunesArticleData` has been moved and renamed to `com.prof18.rssparser.model.ItunesItemData`;
 - `com.prof.rssparser.ItunesChannelData` has been moved to `com.prof18.rssparser.model.ItunesChannelData`;
-- `getChannel()` has been renamed to `getRssChannel()`;
+- `getChannel()` and `getRssChannel()` are removed; download the feed and call `parse()`;
 - `cancel()` is not available anymore, the cancellation can be handled by the caller.
 
 ## Changelog

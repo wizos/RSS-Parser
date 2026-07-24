@@ -125,17 +125,10 @@ kotlin {
             }
         }
 
-        jvmAndroidMain.dependencies {
-            api(libs.com.squareup.okhttp3)
-            implementation(libs.com.squareup.okhttp3.coroutines)
-        }
-
         get("webMain").dependencies {
             implementation(libs.kotlinx.serialization.core)
             implementation(libs.xmlutil)
             implementation(libs.kotlinx.coroutines.core)
-            api(libs.ktor.client.js)
-            api(libs.ktor.client.core)
         }
     }
 }

@@ -44,6 +44,13 @@ class XmlParserAtomIdeaRicirTest : XmlParserTestExecutor() {
                     type = null,
                     medium = "image",
                 ),
+                mediaContents = listOf(
+                    RawMediaContent(
+                        url = "https://idea.ricir.net/assets/ComeSeguireAggiornamenti-social.png",
+                        type = null,
+                        medium = "image",
+                    ),
+                ),
             )
         ),
     )

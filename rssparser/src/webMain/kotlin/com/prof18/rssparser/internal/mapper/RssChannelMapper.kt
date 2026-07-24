@@ -9,6 +9,7 @@ import com.prof18.rssparser.internal.entity.FeedEntity
 import com.prof18.rssparser.internal.entity.RdfFeedEntity
 import com.prof18.rssparser.internal.entity.RssMediaContentEntity
 import com.prof18.rssparser.internal.entity.RssFeedEntity
+import com.prof18.rssparser.internal.resolveAtomLink
 import com.prof18.rssparser.model.RssChannel
 
 internal fun FeedEntity.toRssChannel(baseFeedUrl: String?): RssChannel =
@@ -67,12 +68,13 @@ private fun RssFeedEntity.toRssChannel(): RssChannel {
             link(entry.link?.trim())
             description(entry.description?.trim())
             commentUrl(entry.comments?.trim())
-            generateMediaContent(entry.mediaContent, channelFactory)
-            generateMediaContent(entry.mediaContent2, channelFactory)
+            entry.mediaGroups?.forEach { generateMediaGroup(it, channelFactory) }
+            entry.mediaContents?.forEach { generateMediaContent(it, channelFactory) }
+            entry.mediaContents2?.forEach { generateMediaContent(it, channelFactory) }
             image(entry.newsImage?.link?.trim())
             image(entry.thumb?.trim())
             image(entry.image?.link?.trim())
-            image(entry.mediaThumbnail?.url?.trim())
+            entry.mediaThumbnail?.url?.trim()?.let { channelFactory.setMediaGroupThumbnail(it) }
             sourceName(entry.source?.name?.trim())
             sourceUrl(entry.source?.url?.trim())
             entry.categories?.forEach { category ->
@@ -203,17 +205,19 @@ private fun AtomFeedEntity.toRssChannel(baseFeedUrl: String?): RssChannel {
             }
             channelFactory.setImageFromContent(entry.content)
             channelFactory.setImageFromContent(entry.summary)
-            image(entry.mediaThumbnail?.url)
-            generateAtomMediaContent(entry.mediaContent, channelFactory)
+            entry.mediaThumbnail?.url?.let { channelFactory.setMediaGroupThumbnail(it) }
+            entry.mediaContents?.forEach { generateAtomMediaContent(it, channelFactory) }
+            entry.mediaGroups?.forEach { generateAtomMediaGroup(it, channelFactory) }
             channelFactory.youtubeChannelDataBuilder.channelId(entry.youtubeChannelId)
+            val youtubeMediaGroup = entry.mediaGroups?.firstOrNull()
             with(channelFactory.youtubeItemDataBuilder) {
                 videoId(entry.youtubeVideoId)
-                title(entry.mediaGroup?.title)
-                description(entry.mediaGroup?.mediaDescription)
-                videoUrl(entry.mediaGroup?.mediaContent?.url)
-                thumbnailUrl(entry.mediaGroup?.mediaThumbnail?.url)
-                likesCount(entry.mediaGroup?.mediaCommunity?.mediaStarRating?.count?.toIntOrNull())
-                viewsCount(entry.mediaGroup?.mediaCommunity?.mediaStatistics?.views?.toIntOrNull())
+                title(youtubeMediaGroup?.title)
+                description(youtubeMediaGroup?.mediaDescription)
+                videoUrl(youtubeMediaGroup?.mediaContents?.firstOrNull()?.url)
+                thumbnailUrl(youtubeMediaGroup?.mediaThumbnail?.url)
+                likesCount(youtubeMediaGroup?.mediaCommunity?.mediaStarRating?.count?.toIntOrNull())
+                viewsCount(youtubeMediaGroup?.mediaCommunity?.mediaStatistics?.views?.toIntOrNull())
             }
         }
         channelFactory.buildArticle()
@@ -227,46 +231,58 @@ private fun generateMediaContent(mediaContent: RssMediaContentEntity?, channelFa
     val type = mediaContent.type?.trim()
     val medium = mediaContent.medium?.trim()
 
-    channelFactory.rawMediaContentBuilder.url(url)
-    channelFactory.rawMediaContentBuilder.type(type)
-    channelFactory.rawMediaContentBuilder.medium(medium)
-
-    when {
-        !medium.isNullOrBlank() -> when {
-            medium.equals("image", ignoreCase = true) -> channelFactory.articleBuilder.image(url)
-            medium.equals("audio", ignoreCase = true) -> channelFactory.articleBuilder.audioIfNull(url)
-            medium.equals("video", ignoreCase = true) -> channelFactory.articleBuilder.videoIfNull(url)
-        }
-        !type.isNullOrBlank() -> when {
-            type.contains("image", ignoreCase = true) -> channelFactory.articleBuilder.image(url)
-            type.contains("audio", ignoreCase = true) -> channelFactory.articleBuilder.audioIfNull(url)
-            type.contains("video", ignoreCase = true) -> channelFactory.articleBuilder.videoIfNull(url)
-        }
-    }
+    channelFactory.addMediaContent(url, type, medium)
 }
 
-private fun generateAtomMediaContent(mediaContent: AtomMediaContentEntity?, channelFactory: ChannelFactory) {
+private fun generateAtomMediaContent(
+    mediaContent: AtomMediaContentEntity?,
+    channelFactory: ChannelFactory,
+    includeInLegacyFields: Boolean = true,
+) {
     if (mediaContent == null) return
     val url = mediaContent.url
     val type = mediaContent.type?.trim()
     val medium = mediaContent.medium?.trim()
 
-    channelFactory.rawMediaContentBuilder.url(url)
-    channelFactory.rawMediaContentBuilder.type(type)
-    channelFactory.rawMediaContentBuilder.medium(medium)
+    channelFactory.addMediaContent(url, type, medium, includeInLegacyFields)
+}
 
-    when {
-        !medium.isNullOrBlank() -> when {
-            medium.equals("image", ignoreCase = true) -> channelFactory.articleBuilder.image(url)
-            medium.equals("audio", ignoreCase = true) -> channelFactory.articleBuilder.audioIfNull(url)
-            medium.equals("video", ignoreCase = true) -> channelFactory.articleBuilder.videoIfNull(url)
-        }
-        !type.isNullOrBlank() -> when {
-            type.contains("image", ignoreCase = true) -> channelFactory.articleBuilder.image(url)
-            type.contains("audio", ignoreCase = true) -> channelFactory.articleBuilder.audioIfNull(url)
-            type.contains("video", ignoreCase = true) -> channelFactory.articleBuilder.videoIfNull(url)
-        }
+private fun generateMediaGroup(
+    mediaGroup: com.prof18.rssparser.internal.entity.MediaGroupEntity,
+    channelFactory: ChannelFactory,
+) {
+    channelFactory.startMediaGroup()
+    channelFactory.setMediaGroupTitle(mediaGroup.title)
+    channelFactory.setMediaGroupDescription(mediaGroup.mediaDescription)
+    channelFactory.setMediaGroupThumbnail(mediaGroup.mediaThumbnail?.url)
+    mediaGroup.mediaContents?.forEach {
+        generateAtomMediaContent(
+            mediaContent = it,
+            channelFactory = channelFactory,
+        )
     }
+    channelFactory.endMediaGroup()
+}
+
+private fun generateAtomMediaGroup(
+    mediaGroup: com.prof18.rssparser.internal.entity.MediaGroupEntity,
+    channelFactory: ChannelFactory,
+) {
+    channelFactory.startMediaGroup()
+    channelFactory.setMediaGroupTitle(mediaGroup.title)
+    channelFactory.setMediaGroupDescription(mediaGroup.mediaDescription)
+    channelFactory.setMediaGroupThumbnail(
+        url = mediaGroup.mediaThumbnail?.url,
+        includeInLegacyFields = false,
+    )
+    mediaGroup.mediaContents?.forEach {
+        generateAtomMediaContent(
+            mediaContent = it,
+            channelFactory = channelFactory,
+            includeInLegacyFields = false,
+        )
+    }
+    channelFactory.endMediaGroup()
 }
 
 private fun AtomLinkEntity.generateLink(baseFeedUrl: String?): String? {
@@ -283,7 +299,7 @@ private fun AtomLinkEntity.generateLink(baseFeedUrl: String?): String? {
             rel == AtomKeyword.LINK_REL_ALTERNATE.value &&
             href?.startsWith("/") == true
         ) {
-            baseFeedUrl + href
+            resolveAtomLink(baseFeedUrl, href)
         } else {
             href
         }
