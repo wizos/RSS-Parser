@@ -36,14 +36,17 @@ kotlin {
     iosX64()
     iosSimulatorArm64()
     macosArm64()
+    @Suppress("DEPRECATION") // Preserve Intel simulator publishing until the library drops this target.
     macosX64()
     tvosArm64()
     tvosSimulatorArm64()
+    @Suppress("DEPRECATION") // Preserve Intel simulator publishing until the library drops this target.
     tvosX64()
 
     // From S8 processor, only full 64-bit processors
     watchosDeviceArm64()
     watchosSimulatorArm64()
+    @Suppress("DEPRECATION") // Preserve Intel simulator publishing until the library drops this target.
     watchosX64()
 
     listOf(js(), wasmJs()).forEach {
@@ -80,11 +83,11 @@ kotlin {
             }
         }
 
-        val jvmAndroidMain by creating {
+        val jvmAndroidMain = create("jvmAndroidMain") {
             dependsOn(commonMain.get())
         }
 
-        val jvmAndroidTest by creating {
+        val jvmAndroidTest = create("jvmAndroidTest") {
             dependsOn(commonTest.get())
         }
 
