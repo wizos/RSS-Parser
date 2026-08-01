@@ -27,14 +27,18 @@ public class RssParser internal constructor(
     /**
      * Parses an RSS feed provided by [rawRssFeed] and returns an [RssChannel].
      *
+     * XML byte encoding declarations are ignored because [rawRssFeed] is already decoded.
+     *
      * If parsing fails, the configured [XmlFeedRecovery] may return repaired XML for one retry.
      */
-    public suspend fun parse(rawRssFeed: String, baseUrl: String? = null): RssChannel =
-        parseWithRecovery(
-            parserInput = xmlParser.generateParserInput(rawRssFeed, baseUrl),
+    public suspend fun parse(rawRssFeed: String, baseUrl: String? = null): RssChannel {
+        val normalizedFeed = rawRssFeed.normalizeXmlStringEncoding()
+        return parseWithRecovery(
+            parserInput = xmlParser.generateParserInput(normalizedFeed, baseUrl),
             rawRssFeed = rawRssFeed,
             baseUrl = baseUrl,
         )
+    }
 
     /**
      * Parses raw feed [bytes], preserving XML encoding detection on platforms that support it.
@@ -54,12 +58,24 @@ public class RssParser internal constructor(
         return@withContext try {
             xmlParser.parseXML(parserInput)
         } catch (failure: RssParsingException) {
-            val repairedXml = recovery.repair(rawRssFeed, failure) ?: throw failure
+            val repairedXml = recovery.repair(rawRssFeed, failure)
+                ?.normalizeXmlStringEncoding()
+                ?: throw failure
             val input = xmlParser.generateParserInput(repairedXml, baseUrl)
             xmlParser.parseXML(input)
         }
     }
 }
+
+private val xmlDeclarationEncoding = Regex(
+    pattern = """^(\uFEFF?\s*<\?xml\b[^?]*?)\bencoding\s*=\s*(?:"[^"]*"|'[^']*')""",
+    option = RegexOption.IGNORE_CASE,
+)
+
+private fun String.normalizeXmlStringEncoding(): String =
+    xmlDeclarationEncoding.replace(this) { match ->
+        """${match.groupValues[1]}encoding="UTF-8""""
+    }
 
 /**
  * Returns a default [RssParser] instance.
